@@ -1,0 +1,431 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 183 100% 35%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 183 100% 35%;
+    --radius: 0.5rem;
+    --chart-1: 183 100% 35%;
+    --chart-2: 221 83% 53%;
+    --chart-3: 262 83% 58%;
+    --chart-4: 316 70% 50%;
+    --chart-5: 24 75% 50%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 183 100% 35%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 183 100% 35%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ===== HERO SECTION LUMINOUS EFFECTS ===== */
+
+.hero-section {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(240, 253, 250, 0.8) 25%,
+    rgba(204, 251, 241, 0.3) 50%,
+    rgba(240, 253, 250, 0.8) 75%,
+    rgba(255, 255, 255, 1) 100%
+  );
+}
+
+.hero-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Large gradient orbs */
+.hero-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.6;
+}
+
+.hero-orb-1 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(20, 184, 166, 0.4) 0%, rgba(20, 184, 166, 0.1) 50%, transparent 100%);
+  top: -200px;
+  right: -200px;
+  animation: heroFloat1 8s ease-in-out infinite;
+}
+
+.hero-orb-2 {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(45, 212, 191, 0.3) 0%, rgba(45, 212, 191, 0.1) 50%, transparent 100%);
+  bottom: -150px;
+  left: -150px;
+  animation: heroFloat2 10s ease-in-out infinite;
+}
+
+.hero-orb-3 {
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(94, 234, 212, 0.25) 0%, rgba(94, 234, 212, 0.08) 50%, transparent 100%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: heroFloat3 12s ease-in-out infinite;
+}
+
+/* Floating particles */
+.hero-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(20, 184, 166, 0.6);
+  box-shadow: 0 0 20px rgba(20, 184, 166, 0.8), 0 0 40px rgba(20, 184, 166, 0.4);
+}
+
+.hero-particle-1 {
+  width: 4px;
+  height: 4px;
+  top: 20%;
+  left: 20%;
+  animation: heroParticle1 6s ease-in-out infinite;
+}
+
+.hero-particle-2 {
+  width: 3px;
+  height: 3px;
+  top: 60%;
+  right: 30%;
+  animation: heroParticle2 8s ease-in-out infinite;
+}
+
+.hero-particle-3 {
+  width: 5px;
+  height: 5px;
+  bottom: 30%;
+  left: 15%;
+  animation: heroParticle3 7s ease-in-out infinite;
+}
+
+.hero-particle-4 {
+  width: 2px;
+  height: 2px;
+  top: 40%;
+  right: 20%;
+  animation: heroParticle4 9s ease-in-out infinite;
+}
+
+.hero-particle-5 {
+  width: 3px;
+  height: 3px;
+  top: 70%;
+  left: 60%;
+  animation: heroParticle5 5s ease-in-out infinite;
+}
+
+.hero-particle-6 {
+  width: 4px;
+  height: 4px;
+  bottom: 60%;
+  right: 15%;
+  animation: heroParticle6 11s ease-in-out infinite;
+}
+
+/* Geometric shapes */
+.hero-shape {
+  position: absolute;
+  border: 1px solid rgba(20, 184, 166, 0.3);
+  border-radius: 50%;
+  box-shadow: 0 0 30px rgba(20, 184, 166, 0.2), inset 0 0 30px rgba(20, 184, 166, 0.1);
+}
+
+.hero-shape-1 {
+  width: 200px;
+  height: 200px;
+  top: 15%;
+  left: 10%;
+  animation: heroRotate1 20s linear infinite;
+}
+
+.hero-shape-2 {
+  width: 150px;
+  height: 150px;
+  bottom: 20%;
+  right: 10%;
+  animation: heroRotate2 25s linear infinite reverse;
+}
+
+/* Grid overlay */
+.hero-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: linear-gradient(rgba(20, 184, 166, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 184, 166, 0.05) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: heroGridMove 30s linear infinite;
+}
+
+/* Hero content styling */
+.hero-badge {
+  border: 1px solid rgba(20, 184, 166, 0.3);
+}
+
+.hero-title {
+}
+
+.hero-highlight {
+}
+
+.hero-button-primary {
+  box-shadow: 0 0 30px rgba(20, 184, 166, 0.4), 0 4px 20px rgba(20, 184, 166, 0.3);
+  transition: all 0.3s ease;
+}
+
+.hero-button-primary:hover {
+  box-shadow: 0 0 40px rgba(20, 184, 166, 0.6), 0 6px 25px rgba(20, 184, 166, 0.4);
+  transform: translateY(-2px);
+}
+
+.hero-button-secondary {
+  border: 1px solid rgba(20, 184, 166, 0.3);
+  box-shadow: 0 0 15px rgba(20, 184, 166, 0.2);
+  transition: all 0.3s ease;
+}
+
+.hero-button-secondary:hover {
+  border-color: rgba(20, 184, 166, 0.5);
+  box-shadow: 0 0 25px rgba(20, 184, 166, 0.3);
+  transform: translateY(-1px);
+}
+
+/* ===== ANIMATIONS ===== */
+
+@keyframes heroFloat1 {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  33% {
+    transform: translate(-30px, -30px) rotate(120deg);
+  }
+  66% {
+    transform: translate(30px, -20px) rotate(240deg);
+  }
+}
+
+@keyframes heroFloat2 {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(40px, -40px) rotate(180deg);
+  }
+}
+
+@keyframes heroFloat3 {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.1) rotate(180deg);
+  }
+}
+
+@keyframes heroParticle1 {
+  0%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0.6;
+  }
+  25% {
+    transform: translate(20px, -30px);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-10px, -20px);
+    opacity: 0.8;
+  }
+  75% {
+    transform: translate(30px, 10px);
+    opacity: 0.9;
+  }
+}
+
+@keyframes heroParticle2 {
+  0%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0.5;
+  }
+  33% {
+    transform: translate(-25px, 20px);
+    opacity: 1;
+  }
+  66% {
+    transform: translate(15px, -25px);
+    opacity: 0.7;
+  }
+}
+
+@keyframes heroParticle3 {
+  0%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translate(-20px, -35px);
+    opacity: 1;
+  }
+}
+
+@keyframes heroParticle4 {
+  0%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0.4;
+  }
+  25% {
+    transform: translate(15px, 25px);
+    opacity: 0.8;
+  }
+  75% {
+    transform: translate(-20px, -15px);
+    opacity: 0.6;
+  }
+}
+
+@keyframes heroParticle5 {
+  0%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0.6;
+  }
+  40% {
+    transform: translate(25px, -20px);
+    opacity: 1;
+  }
+  80% {
+    transform: translate(-15px, 30px);
+    opacity: 0.8;
+  }
+}
+
+@keyframes heroParticle6 {
+  0%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0.5;
+  }
+  30% {
+    transform: translate(-30px, -10px);
+    opacity: 0.9;
+  }
+  70% {
+    transform: translate(20px, -25px);
+    opacity: 0.7;
+  }
+}
+
+@keyframes heroRotate1 {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes heroRotate2 {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes heroGridMove {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(60px, 60px);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .hero-orb-1 {
+    width: 250px;
+    height: 250px;
+  }
+  .hero-orb-2 {
+    width: 200px;
+    height: 200px;
+  }
+  .hero-orb-3 {
+    width: 150px;
+    height: 150px;
+  }
+  .hero-shape-1 {
+    width: 120px;
+    height: 120px;
+  }
+  .hero-shape-2 {
+    width: 100px;
+    height: 100px;
+  }
+}
