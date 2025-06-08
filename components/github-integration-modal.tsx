@@ -1,7 +1,5 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -28,16 +26,18 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 interface GitHubIntegrationModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  onScanComplete?: (results: any) => void // Add this prop
 }
 
-export function GitHubIntegrationModal({ open, onOpenChange }: GitHubIntegrationModalProps) {
+export function GitHubIntegrationModal({ open, onOpenChange, onScanComplete }: GitHubIntegrationModalProps) {
   const [publicRepoUrl, setPublicRepoUrl] = useState("")
   const [isValidUrl, setIsValidUrl] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  // GitHub OAuth configuration (these would come from your environment variables)
-  const GITHUB_CLIENT_ID = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID || "your_github_client_id"
-  const REDIRECT_URI = process.env.NEXT_PUBLIC_GITHUB_REDIRECT_URI || "https://yourdomain.com/api/github/callback"
+  // Update these to match your backend configuration
+  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080"
+  const GITHUB_REDIRECT_URI = `${BACKEND_URL}/api/github/callback`
 
   const validateGitHubUrl = (url: string) => {
     const githubUrlPattern = /^https:\/\/github\.com\/[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+\/?$/
@@ -46,18 +46,41 @@ export function GitHubIntegrationModal({ open, onOpenChange }: GitHubIntegration
     return isValid
   }
 
-  const handlePublicRepoSubmit = () => {
-    if (validateGitHubUrl(publicRepoUrl)) {
-      setIsConnecting(true)
-      // Here you would send the public repo URL to your backend
-      console.log("Connecting to public repo:", publicRepoUrl)
+  const handlePublicRepoSubmit = async () => {
+    if (!validateGitHubUrl(publicRepoUrl)) return
+    
+    setIsConnecting(true)
+    setError(null)
 
-      // Simulate API call
-      setTimeout(() => {
-        setIsConnecting(false)
-        onOpenChange(false)
-        // Redirect to analysis page or show success
-      }, 2000)
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/scan/public`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          repoUrl: publicRepoUrl
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Failed to scan repository')
+      }
+
+      const results = await response.json()
+      
+      // Notify parent component of successful scan
+      if (onScanComplete) {
+        onScanComplete(results)
+      }
+      
+      onOpenChange(false)
+    } catch (err) {
+      console.error('Scan failed:', err)
+      setError(err instanceof Error ? err.message : 'An unknown error occurred')
+    } finally {
+      setIsConnecting(false)
     }
   }
 
@@ -65,23 +88,17 @@ export function GitHubIntegrationModal({ open, onOpenChange }: GitHubIntegration
     // Generate a random state for CSRF protection
     const state = Math.random().toString(36).substring(2, 15)
 
-    // Store state in localStorage or session for validation later
+    // Store state in localStorage for validation later
     localStorage.setItem("github_oauth_state", state)
 
-    // Construct GitHub OAuth URL
-    const githubAuthUrl = new URL("https://github.com/login/oauth/authorize")
-    githubAuthUrl.searchParams.append("client_id", GITHUB_CLIENT_ID)
-    githubAuthUrl.searchParams.append("redirect_uri", REDIRECT_URI)
-    githubAuthUrl.searchParams.append("scope", "repo")
-    githubAuthUrl.searchParams.append("state", state)
-
-    // Redirect to GitHub OAuth
-    window.location.href = githubAuthUrl.toString()
+    // Redirect to backend's GitHub auth endpoint
+    window.location.href = `${BACKEND_URL}/api/github/auth?state=${state}`
   }
 
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const url = e.target.value
     setPublicRepoUrl(url)
+    setError(null)
     if (url) {
       validateGitHubUrl(url)
     } else {
@@ -101,6 +118,13 @@ export function GitHubIntegrationModal({ open, onOpenChange }: GitHubIntegration
             Connect your GitHub repository to scan Helm charts for security vulnerabilities and best practices.
           </DialogDescription>
         </DialogHeader>
+
+        {error && (
+          <Alert variant="destructive">
+            <Info className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
         <Tabs defaultValue="public" className="w-full">
           <TabsList className="grid w-full grid-cols-2">

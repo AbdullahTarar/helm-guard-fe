@@ -1,13 +1,25 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { ArrowRight, Github, Shield, Eye, AlertTriangle, CheckCircle, Code, Upload } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { GitHubIntegrationModal } from "@/components/github-integration-modal"
-import Link from "next/link"
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { ArrowRight, Github, Shield, Eye, AlertTriangle, CheckCircle, Code, Upload } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { GitHubIntegrationModal } from "@/components/github-integration-modal";
+import { RepoSelectionModal } from "@/components/repo-selection-modal";
+import Link from "next/link";
 
 export default function Home() {
-  const [isGitHubModalOpen, setIsGitHubModalOpen] = useState(false)
+  const searchParams = useSearchParams();
+  const [isGitHubModalOpen, setIsGitHubModalOpen] = useState(false);
+  const [isReposelectionOpen, setIsReposelectionOpen] = useState(false);
+
+  useEffect(() => {
+    const auth = searchParams.get('auth');
+    if (auth === 'success') {
+      setIsReposelectionOpen(true);
+    }
+  }, [searchParams]);
+
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -289,6 +301,14 @@ export default function Home() {
 
       {/* GitHub Integration Modal */}
       <GitHubIntegrationModal open={isGitHubModalOpen} onOpenChange={setIsGitHubModalOpen} />
+      <RepoSelectionModal
+        open={isReposelectionOpen}
+        onOpenChange={setIsReposelectionOpen}
+        onRepoSelected={(repo) => {
+          console.log("scanning repo", repo)
+          setIsReposelectionOpen(false)
+        }}
+      />
     </div>
   )
 }
