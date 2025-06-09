@@ -7,18 +7,21 @@ import { Button } from "@/components/ui/button";
 import { GitHubIntegrationModal } from "@/components/github-integration-modal";
 import { RepoSelectionModal } from "@/components/repo-selection-modal";
 import Link from "next/link";
+import { Suspense } from "react"
 
 export default function Home() {
-  const searchParams = useSearchParams();
   const [isGitHubModalOpen, setIsGitHubModalOpen] = useState(false);
   const [isReposelectionOpen, setIsReposelectionOpen] = useState(false);
 
   useEffect(() => {
-    const auth = searchParams.get('auth');
-    if (auth === 'success') {
-      setIsReposelectionOpen(true);
+    if (typeof window !== 'undefined') { // Ensure we're on the client
+      const params = new URLSearchParams(window.location.search);
+      const auth = params.get('auth');
+      if (auth === 'success') {
+        setIsReposelectionOpen(true);
+      }
     }
-  }, [searchParams]);
+  }, []);
 
 
   return (
@@ -301,7 +304,8 @@ export default function Home() {
 
       {/* GitHub Integration Modal */}
       <GitHubIntegrationModal open={isGitHubModalOpen} onOpenChange={setIsGitHubModalOpen} />
-      <RepoSelectionModal
+      <Suspense fallback={<div>Loading...</div>}>
+        <RepoSelectionModal
         open={isReposelectionOpen}
         onOpenChange={setIsReposelectionOpen}
         onRepoSelected={(repo) => {
@@ -309,6 +313,8 @@ export default function Home() {
           setIsReposelectionOpen(false)
         }}
       />
+      </Suspense>
+
     </div>
   )
 }
