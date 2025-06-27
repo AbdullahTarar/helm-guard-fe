@@ -117,8 +117,6 @@ export default function RepositoriesPage() {
   }
 
 const handleRepoSelect = async (repoFullName: string) => {
-  // repoFullName should be "AbdullahTarar/node-helm-chart"
-  console.log("Scanning repo:", repoFullName); // Debug log
 
   setSelectedRepo(repoFullName);
   setIsScanning(true);
@@ -129,7 +127,7 @@ const handleRepoSelect = async (repoFullName: string) => {
       credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        repoUrl: `https://github.com/${repoFullName}`, // ✅ Correct format
+        repoUrl: `https://github.com/${repoFullName}`,
       }),
     });
 
