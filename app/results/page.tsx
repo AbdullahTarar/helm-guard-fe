@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -28,130 +28,65 @@ import {
   ExternalLink,
   Copy,
   RefreshCw,
+  Loader2,
 } from "lucide-react"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 
-// Mock data - replace with actual API data
-const mockScanResults = {
+interface ScanResults {
   repository: {
-    name: "my-app-helm-chart",
-    url: "https://github.com/username/my-app-helm-chart",
-    branch: "main",
-    lastCommit: "abc123f",
-    scanDate: "2024-01-15T10:30:00Z",
-  },
+    name: string
+    url: string
+    branch: string
+    lastCommit: string
+    scanDate: string
+  }
   summary: {
-    totalIssues: 12,
-    critical: 2,
-    high: 3,
-    medium: 4,
-    low: 3,
-    passed: 28,
-    score: 75,
-  },
-  charts: [
-    {
-      name: "my-app",
-      path: "charts/my-app",
-      version: "1.2.3",
-      issues: 8,
-      resources: 12,
-    },
-    {
-      name: "database",
-      path: "charts/database",
-      version: "2.1.0",
-      issues: 4,
-      resources: 6,
-    },
-  ],
-  securityFindings: [
-    {
-      id: "SEC-001",
-      severity: "critical",
-      title: "Container running as root",
-      description: "Container is configured to run as root user, which poses security risks",
-      file: "charts/my-app/templates/deployment.yaml",
-      line: 45,
-      recommendation: "Set securityContext.runAsNonRoot: true and securityContext.runAsUser to a non-root UID",
-      category: "Security Context",
-    },
-    {
-      id: "SEC-002",
-      severity: "critical",
-      title: "Privileged container detected",
-      description: "Container is running in privileged mode",
-      file: "charts/my-app/templates/deployment.yaml",
-      line: 52,
-      recommendation: "Remove privileged: true unless absolutely necessary",
-      category: "Security Context",
-    },
-    {
-      id: "SEC-003",
-      severity: "high",
-      title: "Missing resource limits",
-      description: "No CPU or memory limits specified",
-      file: "charts/my-app/templates/deployment.yaml",
-      line: 38,
-      recommendation: "Add resources.limits.cpu and resources.limits.memory",
-      category: "Resource Management",
-    },
-    {
-      id: "SEC-004",
-      severity: "high",
-      title: "Insecure image tag",
-      description: "Using 'latest' tag instead of specific version",
-      file: "charts/my-app/values.yaml",
-      line: 12,
-      recommendation: "Use specific image tags instead of 'latest'",
-      category: "Image Security",
-    },
-    {
-      id: "SEC-005",
-      severity: "medium",
-      title: "Missing network policy",
-      description: "No network policies defined for pod-to-pod communication",
-      file: "charts/my-app/templates/",
-      line: null,
-      recommendation: "Add NetworkPolicy resources to restrict traffic",
-      category: "Network Security",
-    },
-  ],
-  resources: [
-    { type: "Deployment", name: "my-app", namespace: "default", replicas: 3 },
-    { type: "Service", name: "my-app-service", namespace: "default", ports: ["80", "443"] },
-    { type: "ConfigMap", name: "my-app-config", namespace: "default", keys: 5 },
-    { type: "Secret", name: "my-app-secrets", namespace: "default", keys: 3 },
-    { type: "Ingress", name: "my-app-ingress", namespace: "default", hosts: ["app.example.com"] },
-    { type: "PersistentVolumeClaim", name: "data-pvc", namespace: "default", size: "10Gi" },
-  ],
-  bestPractices: [
-    {
-      category: "Security",
-      passed: 6,
-      total: 10,
-      items: [
-        { name: "Non-root user", status: "failed", severity: "critical" },
-        { name: "Read-only filesystem", status: "passed", severity: "medium" },
-        { name: "No privileged containers", status: "failed", severity: "critical" },
-        { name: "Resource limits set", status: "failed", severity: "high" },
-        { name: "Image vulnerability scan", status: "passed", severity: "medium" },
-        { name: "Secrets not in environment", status: "passed", severity: "high" },
-      ],
-    },
-    {
-      category: "Reliability",
-      passed: 8,
-      total: 10,
-      items: [
-        { name: "Health checks configured", status: "passed", severity: "high" },
-        { name: "Resource requests set", status: "passed", severity: "medium" },
-        { name: "Multiple replicas", status: "passed", severity: "medium" },
-        { name: "Pod disruption budget", status: "failed", severity: "medium" },
-        { name: "Graceful shutdown", status: "passed", severity: "low" },
-      ],
-    },
-  ],
+    totalIssues: number
+    critical: number
+    high: number
+    medium: number
+    low: number
+    passed: number
+    score: number
+  }
+  charts: {
+    name: string
+    path: string
+    version: string
+    issues: number
+    resources: number
+  }[]
+  securityFindings: {
+    id: string
+    severity: string
+    title: string
+    description: string
+    file: string
+    line: number | null
+    recommendation: string
+    category: string
+  }[]
+  resources: {
+    type: string
+    name: string
+    namespace: string
+    replicas?: number
+    ports?: string[]
+    keys?: number
+    size?: string
+    hosts?: string[]
+  }[]
+  bestPractices: {
+    category: string
+    passed: number
+    total: number
+    items: {
+      name: string
+      status: string
+      severity: string
+    }[]
+  }[]
 }
 
 const getSeverityColor = (severity: string) => {
@@ -204,10 +139,86 @@ const getResourceIcon = (type: string) => {
 }
 
 export default function ResultsPage() {
+  const searchParams = useSearchParams()
+  const scanId = searchParams.get("id")
+  
+  const [scanResults, setScanResults] = useState<ScanResults | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [selectedFinding, setSelectedFinding] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!scanId) {
+      setError("No scan ID provided")
+      setLoading(false)
+      return
+    }
+
+    const fetchResults = async () => {
+      try {
+        const response = await fetch(`http://localhost:8080/api/scan/results/${scanId}`)
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        const data = await response.json()
+        setScanResults(data)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to fetch scan results")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchResults()
+  }, [scanId])
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <p>Loading scan results...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <AlertTriangle className="h-8 w-8 text-red-500" />
+          <p className="text-red-500">{error}</p>
+          <Link href="/">
+            <Button variant="outline">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Home
+            </Button>
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  if (!scanResults) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <AlertTriangle className="h-8 w-8 text-yellow-500" />
+          <p>No scan results found</p>
+          <Link href="/">
+            <Button variant="outline">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Home
+            </Button>
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -234,12 +245,12 @@ export default function ResultsPage() {
               <h1 className="text-3xl font-bold">Scan Results</h1>
               <div className="flex items-center gap-2 mt-2 text-muted-foreground">
                 <Github className="h-4 w-4" />
-                <span>{mockScanResults.repository.name}</span>
+                <span>{scanResults.repository.name}</span>
                 <span>•</span>
-                <span>Branch: {mockScanResults.repository.branch}</span>
+                <span>Branch: {scanResults.repository.branch}</span>
                 <span>•</span>
                 <Clock className="h-4 w-4" />
-                <span>{new Date(mockScanResults.repository.scanDate).toLocaleDateString()}</span>
+                <span>{new Date(scanResults.repository.scanDate).toLocaleDateString()}</span>
               </div>
             </div>
             <div className="flex gap-2">
@@ -264,32 +275,32 @@ export default function ResultsPage() {
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between mb-4">
-                <div className="text-4xl font-bold text-teal-600">{mockScanResults.summary.score}/100</div>
+                <div className="text-4xl font-bold text-teal-600">{scanResults.summary.score}/100</div>
                 <div className="text-right">
                   <div className="text-sm text-muted-foreground">Overall Security Rating</div>
                   <Badge className="bg-yellow-100 text-yellow-800">Needs Improvement</Badge>
                 </div>
               </div>
-              <Progress value={mockScanResults.summary.score} className="mb-4" />
+              <Progress value={scanResults.summary.score} className="mb-4" />
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-red-600">{mockScanResults.summary.critical}</div>
+                  <div className="text-2xl font-bold text-red-600">{scanResults.summary.critical}</div>
                   <div className="text-sm text-muted-foreground">Critical</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-orange-600">{mockScanResults.summary.high}</div>
+                  <div className="text-2xl font-bold text-orange-600">{scanResults.summary.high}</div>
                   <div className="text-sm text-muted-foreground">High</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-yellow-600">{mockScanResults.summary.medium}</div>
+                  <div className="text-2xl font-bold text-yellow-600">{scanResults.summary.medium}</div>
                   <div className="text-sm text-muted-foreground">Medium</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">{mockScanResults.summary.low}</div>
+                  <div className="text-2xl font-bold text-blue-600">{scanResults.summary.low}</div>
                   <div className="text-sm text-muted-foreground">Low</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">{mockScanResults.summary.passed}</div>
+                  <div className="text-2xl font-bold text-green-600">{scanResults.summary.passed}</div>
                   <div className="text-sm text-muted-foreground">Passed</div>
                 </div>
               </div>
@@ -320,7 +331,7 @@ export default function ResultsPage() {
             {/* Security Issues Tab */}
             <TabsContent value="security" className="space-y-6">
               <div className="grid gap-4">
-                {mockScanResults.securityFindings.map((finding) => (
+                {scanResults.securityFindings.map((finding) => (
                   <Card
                     key={finding.id}
                     className={`cursor-pointer transition-all ${
@@ -392,7 +403,7 @@ export default function ResultsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-4">
-                    {mockScanResults.resources.map((resource, index) => (
+                    {scanResults.resources.map((resource, index) => (
                       <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="flex items-center gap-3">
                           {getResourceIcon(resource.type)}
@@ -420,7 +431,7 @@ export default function ResultsPage() {
             {/* Best Practices Tab */}
             <TabsContent value="practices" className="space-y-6">
               <div className="grid gap-6">
-                {mockScanResults.bestPractices.map((category, index) => (
+                {scanResults.bestPractices.map((category, index) => (
                   <Card key={index}>
                     <CardHeader>
                       <CardTitle className="flex items-center justify-between">
@@ -456,7 +467,7 @@ export default function ResultsPage() {
             {/* Charts Tab */}
             <TabsContent value="charts" className="space-y-6">
               <div className="grid gap-4">
-                {mockScanResults.charts.map((chart, index) => (
+                {scanResults.charts.map((chart, index) => (
                   <Card key={index}>
                     <CardHeader>
                       <CardTitle className="flex items-center justify-between">

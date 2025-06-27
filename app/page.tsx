@@ -58,16 +58,10 @@ export default function Home() {
           </div>
           <div className="flex flex-1 items-center justify-end space-x-4">
             <nav className="flex items-center space-x-2">
-              <Button variant="outline" size="sm" className="h-9 gap-1" onClick={() => setIsGitHubModalOpen(true)}>
+              <Button className="h-9 bg-teal-500 hover:bg-teal-600 gap-1" variant="outline" size="lg"  onClick={() => setIsGitHubModalOpen(true)}>
                 <Github className="h-4 w-4" />
-                <span>GitHub</span>
+                <span>Connect GitHub</span>
               </Button>
-              <Link href="/upload">
-                <Button size="sm" className="h-9 bg-teal-500 hover:bg-teal-600 gap-1">
-                  <Upload className="h-4 w-4" />
-                  Upload Chart
-                </Button>
-              </Link>
             </nav>
           </div>
         </div>
@@ -117,11 +111,7 @@ export default function Home() {
               >
                 Connect GitHub <ArrowRight className="h-4 w-4" />
               </Button>
-              <Link href="/upload">
-                <Button variant="outline" size="lg" className="hero-button-secondary">
-                  Upload Chart
-                </Button>
-              </Link>
+              
             </div>
           </div>
         </section>
