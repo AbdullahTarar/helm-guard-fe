@@ -137,7 +137,8 @@ const handleRepoSelect = async (repoFullName: string) => {
     }
 
     const { id } = await response.json();
-    router.push(`/results?id=${id}`); // Redirect to results page
+    const resultsUrl = `/results?id=${id}&type=private`;
+    router.push(resultsUrl); // Redirect to results page
   } catch (err) {
     setError(err instanceof Error ? err.message : "Scan failed");
   } finally {

@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
+import { ResultsPageBackButton } from '@/components/ResultsPageBackButton';
 import {
   ArrowLeft,
   Shield,
@@ -32,6 +33,13 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
+
+interface ResultsPageProps {
+  searchParams: {
+    id?: string;
+    type?: 'public' | 'private';
+  };
+}
 
 interface ScanResults {
   repository: {
@@ -141,7 +149,8 @@ const getResourceIcon = (type: string) => {
 export default function ResultsPage() {
   const searchParams = useSearchParams()
   const scanId = searchParams.get("id")
-  
+  const repoType = searchParams.get('type');
+  const isPrivateRepo = repoType === 'private';
   const [scanResults, setScanResults] = useState<ScanResults | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -193,10 +202,9 @@ export default function ResultsPage() {
         <div className="flex flex-col items-center gap-4">
           <AlertTriangle className="h-8 w-8 text-red-500" />
           <p className="text-red-500">{error}</p>
-          <Link href="/">
+          <Link href="/repositories">
             <Button variant="outline">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Home
             </Button>
           </Link>
         </div>
@@ -225,10 +233,9 @@ export default function ResultsPage() {
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur">
         <div className="container flex h-16 items-center space-x-4">
-          <Link href="/" className="flex items-center space-x-2">
-            <ArrowLeft className="h-4 w-4" />
-            <span className="text-sm font-medium">Back to Home</span>
-          </Link>
+        <div className="mb-6">
+          <ResultsPageBackButton isPrivateRepo={isPrivateRepo} />
+        </div>
           <div className="flex-1" />
           <Link href="/" className="flex items-center space-x-2">
             <Shield className="h-6 w-6 text-teal-500" />
