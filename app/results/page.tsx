@@ -147,39 +147,46 @@ const getResourceIcon = (type: string) => {
 }
 
 export default function ResultsPage() {
-  const searchParams = useSearchParams()
-  const scanId = searchParams.get("id")
-  const repoType = searchParams.get('type');
-  const isPrivateRepo = repoType === 'private';
+const [scanId, setScanId] = useState<string | null>(null);
+const [repoType, setRepoType] = useState<'public' | 'private' | null>(null);
+const isPrivateRepo = repoType === 'private';
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    const type = params.get('type') as 'public' | 'private' | null;
+
+    setScanId(id);
+    setRepoType(type);
+  }, []);
   const [scanResults, setScanResults] = useState<ScanResults | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedFinding, setSelectedFinding] = useState<string | null>(null)
+  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL
 
-  useEffect(() => {
-    if (!scanId) {
-      setError("No scan ID provided")
-      setLoading(false)
-      return
-    }
 
-    const fetchResults = async () => {
-      try {
-        const response = await fetch(`http://localhost:8080/api/scan/results/${scanId}`)
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
-        const data = await response.json()
-        setScanResults(data)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch scan results")
-      } finally {
-        setLoading(false)
+useEffect(() => {
+  if (!scanId) return;
+
+  const fetchResults = async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/scan/results/${scanId}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+      const data = await response.json();
+      setScanResults(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch scan results");
+    } finally {
+      setLoading(false);
     }
+  };
 
-    fetchResults()
-  }, [scanId])
+  fetchResults();
+}, [scanId]);
+
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
