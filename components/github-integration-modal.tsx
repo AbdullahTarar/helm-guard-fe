@@ -40,7 +40,7 @@ export function GitHubIntegrationModal({ open, onOpenChange, onScanComplete }: G
 
 
   // Update these to match your backend configuration
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080"
+  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL
   const GITHUB_REDIRECT_URI = `${BACKEND_URL}/api/github/callback`
 
   const validateGitHubUrl = (url: string) => {
